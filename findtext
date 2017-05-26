@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# Lab2 
+# CS 591 – Linux Administration – Summer 2016 
+# Majid Memari SIU853655961
+# Mon 25 Jul 2016 07:12:15 PM PDT
+
+# Check thath the program was called with a legal number
+# of arguments
+
+if [[ "$#" -lt 2 || "$#" -gt 3 ]]; then
+	echo "Usage: findtext ROOT_DIRECTORY PATTERN [PROGRAM]"
+	exit 1
+fi
+
+# Give command line arguments good names
+
+rootdir=$1
+pattern=$2
+program=$3
+
+# Make certain the specified ROOT_DIRECTORY is a valid
+# directory
+
+if [[ ! -d "$rootdir" ]]; then
+	echo "ROOT_DIRECTORY is not a valid directory"
+	exit 1
+fi
+
+# Find PROGRAM's absolute path prior to calling cd
+
+if [[ $# -eq 3 ]]; then
+	abs_program=$(which "$program")
+fi
+
+# Make ROOT_DIRECTORY the CWD
+
+cd "$rootdir"
+
+# Loop through the entries in the ROOT_DIRECTORY
+
+for file in .* *; do
+
+# If an entry is regular file,
+
+	if [[ -f $file ]]; then
+	
+# check if it contains text matching PATTERN
+
+		grep "$pattern" $file &> /dev/null
+		
+# If the file does match and PROGRAM was supplied
+
+		if [[ $? -eq 0 ]]; then
+			
+# If a PROGRAM was supplied or not
+
+				if [[ $# -eq 3 ]]; then
+				
+# call PROGRAM passing it the matching file’s absolute path
+# as its only command-line argument
+
+					"$abs_program" "$(realpath "$file")" 2> /dev/null
+					
+				else
+# If PROGRAM was not given, print the file’s relative path
+
+					echo "$file"
+				fi
+		fi
+		
+	fi
+done
+
+# Successful completion of the script should result
+# in an exit status of 0
+
+exit 0
+
+# EOF
+
+
